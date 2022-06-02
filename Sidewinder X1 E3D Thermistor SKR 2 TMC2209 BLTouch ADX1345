@@ -122,8 +122,8 @@ square_corner_velocity: 5
 [bltouch]
 sensor_pin: PE5
 control_pin: PE4
-x_offset: 28
-y_offset: -35
+x_offset: -52
+y_offset: -27
 #z_offset: 0
 samples:2
 samples_result:average
@@ -172,32 +172,32 @@ split_delta_z: .010
 fade_start: 1.0 
 fade_end: 5.0
 
-[resonance_tester]
-accel_chip: adxl345
-probe_points:
-150, 155, 20
+#[resonance_tester]
+#accel_chip: adxl345
+#probe_points:
+#150, 155, 20
 
 #Accelerometer
-[adxl345]
-cs_pin: PA4
+#[adxl345]
+#cs_pin: PA4
 #   The SPI enable pin for the sensor. This parameter must be provided.
-spi_speed: 5000000
+#spi_speed: 5000000
 #   The SPI speed (in hz) to use when communicating with the chip.
 #   The default is 5000000.
-spi_bus: spi
-spi_software_sclk_pin: PA6
-spi_software_mosi_pin: PA7
-spi_software_miso_pin: PA5
+#spi_bus: spi
+#spi_software_sclk_pin: PA6
+#spi_software_mosi_pin: PA7
+#spi_software_miso_pin: PA5
 #   See the "common SPI settings" section for a description of the
 #   above parameters.
-axes_map: x, y, z
+#axes_map: x, y, z
 #   The accelerometer axis for each of the printer's X, Y, and Z axes.
 #   This may be useful if the accelerometer is mounted in an
 #   orientation that does not match the printer orientation. For
 #   example, one could set this to "y, x, z" to swap the X and Y axes.
 #   It is also possible to negate an axis if the accelerometer
 #   direction is reversed (eg, "x, z, -y"). The default is "x, y, z".
-rate: 3200
+#rate: 3200
 #   Output data rate for ADXL345. ADXL345 supports the following data
 #   rates: 3200, 1600, 800, 400, 200, 100, 50, and 25. Note that it is
 #   not recommended to change this rate from the default 3200, and
@@ -309,7 +309,6 @@ uart_pin: PD0
 run_current: 0.650
 hold_current: 0.450
 stealthchop_threshold: 250
-#diag_pin:
 
 [tmc2209 extruder]
 uart_pin: PC6
@@ -322,7 +321,6 @@ uart_pin: PD12
 run_current: 0.650
 hold_current: 0.500
 stealthchop_threshold: 250
-#diag_pin:
 
 #*# <---------------------- SAVE_CONFIG ---------------------->
 #*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
