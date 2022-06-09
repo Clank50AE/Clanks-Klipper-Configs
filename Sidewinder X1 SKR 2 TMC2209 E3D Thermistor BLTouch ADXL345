@@ -23,11 +23,11 @@ dir_pin: !PE1
 enable_pin: !PE3
 microsteps: 16
 rotation_distance: 40
-endstop_pin: ^PC1 
+endstop_pin: ^!PC1 
 #endstop_pin: tmc2209_stepper_x:virtual_endstop
 #homing_retract_dist: 0
 position_endstop: 0
-position_max: 300
+position_max: 305
 homing_speed: 100
 
 [stepper_y]
@@ -36,11 +36,11 @@ dir_pin: !PD4
 enable_pin: !PD6
 microsteps: 16
 rotation_distance: 40
-endstop_pin: ^PC3 
+endstop_pin: ^!PC3 
 #endstop_pin: tmc2209_stepper_y:virtual_endstop
 #homing_retract_dist: 0
 position_endstop: 0
-position_max: 300
+position_max: 310
 homing_speed: 100
 
 [stepper_z]
@@ -65,42 +65,54 @@ step_pin: PD15
 dir_pin: !PD14
 enable_pin: !PC7
 microsteps: 16
-rotation_distance: 7
+rotation_distance: 6
 nozzle_diameter: 0.400
 filament_diameter: 1.750
 heater_pin: PB3
 sensor_type: ATC Semitec 104GT-2
-sensor_pin: PA2
-control: pid
-pid_Kp: 22.2
-pid_Ki: 1.08
-pid_Kd: 114
+sensor_pin: PA3
+#control: pid
+#pid_Kp: 22.2
+#pid_Ki: 1.08
+#pid_Kd: 114
 max_extrude_only_distance: 100
-min_extrude_temp: 180
+min_extrude_temp: 170
+min_temp: -10
 max_temp: 260
+pressure_advance: .06
 
-[heater_bed]
-heater_pin: PD7
-sensor_type: EPCOS 100K B57560G104F
-sensor_pin: PA1
-control: pid
-pid_Kp: 22.2
-pid_Ki: 1.08
-pid_Kd: 114
-min_temp: 0
-max_temp: 130
+#[heater_bed]
+#heater_pin: PD7
+#sensor_type: EPCOS 100K B57560G104F
+#sensor_pin: PA1
+#control: pid
+#pid_Kp: 22.2
+#pid_Ki: 1.08
+#pid_Kd: 114
+#min_temp: -10
+#max_temp: 120
 
 [fan]
-pin: PB7
+pin: PB6
 
 [heater_fan my_nozzle_fan]
-pin: PB6
+pin: PB7
 heater: extruder
 heater_temp: 50.0
 fan_speed: 1.0
 
-#[heater_fan fan2]
-#pin: PB5
+[controller_fan fan3]
+pin: PB5
+stepper: stepper_x, stepper_y, stepper_z, stepper_z1, extruder
+fan_speed: .80
+idle_speed: .50
+idle_timeout: 30
+
+
+[display_status]
+
+[virtual_sdcard]
+path: ~/gcode_files
 
 # Due to BTT implementing a Marlin-specific safety feature,
 # "anti-reversal stepper protection", this pin needs pulling
@@ -111,7 +123,7 @@ pin: PC13
 value: 1
 
 [mcu]
-serial: /dev/serial/by-id/usb-Klipper_Klipper_firmware_12345-if00
+serial: /dev/serial/by-id/usb-Klipper_stm32f407xx_210040000350415832393820-if00
 
 [printer]
 kinematics: cartesian
@@ -122,10 +134,10 @@ max_z_accel: 100
 square_corner_velocity: 5
 
 [bltouch]
-sensor_pin: PE5
-control_pin: PE4
-x_offset: -52
-y_offset: -27
+sensor_pin: ^PE4
+control_pin: PE5
+x_offset: -48
+y_offset: -20
 #z_offset: 0
 samples:2
 samples_result:average
@@ -162,9 +174,9 @@ speed: 100.0
 screw_thread: CW-M5
 
 [bed_mesh]
-speed: 800
-mesh_min: 30,30
-mesh_max: 270,270
+speed: 400
+mesh_min: 38,20
+mesh_max: 257,270
 probe_count: 5,5
 mesh_pps: 2,2
 algorithm: bicubic
@@ -213,8 +225,8 @@ fade_end: 5.0
 [gcode_macro START_PRINT]
 # Reference https://github.com/KevinOConnor/klipper/blob/master/docs/Config_Reference.md#gcode_macroA
 # On how to override default parameters
-default_parameter_BED_TEMP: 60
-default_parameter_EXTRUDER_TEMP: 200
+#default_parameter_BED_TEMP: 60
+variable_EXTRUDER_TEMP: 200
 
 gcode:
  # Home the printer
@@ -257,7 +269,71 @@ gcode:
     M84
 
 [pause_resume]
-recover_velocity: 50.
+
+[gcode_macro PAUSE]
+description: Pause the actual running print
+rename_existing: PAUSE_BASE
+# change this if you need more or less extrusion
+variable_extrude: 1.0
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  ##### set park positon for x and y #####
+  # default is your max posion from your printer.cfg
+  {% set x_park = printer.toolhead.axis_maximum.x|float - 5.0 %}
+  {% set y_park = printer.toolhead.axis_maximum.y|float - 5.0 %}
+  ##### calculate save lift position #####
+  {% set max_z = printer.toolhead.axis_maximum.z|float %}
+  {% set act_z = printer.toolhead.position.z|float %}
+  {% if act_z < (max_z - 2.0) %}
+      {% set z_safe = 2.0 %}
+  {% else %}
+      {% set z_safe = max_z - act_z %}
+  {% endif %}
+  ##### end of definitions #####
+  PAUSE_BASE
+  G91
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G1 E-{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}
+  {% if "xyz" in printer.toolhead.homed_axes %}
+    G1 Z{z_safe} F900
+    G90
+    G1 X{x_park} Y{y_park} F6000
+  {% else %}
+    {action_respond_info("Printer not homed")}
+  {% endif %} 
+
+[gcode_macro RESUME]
+description: Resume the actual running print
+rename_existing: RESUME_BASE
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  #### get VELOCITY parameter if specified ####
+  {% if 'VELOCITY' in params|upper %}
+    {% set get_params = ('VELOCITY=' + params.VELOCITY)  %}
+  {%else %}
+    {% set get_params = "" %}
+  {% endif %}
+  ##### end of definitions #####
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G91
+    G1 E{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}  
+  RESUME_BASE {get_params}
+
+[gcode_macro CANCEL_PRINT]
+description: Cancel the actual running print
+rename_existing: CANCEL_PRINT_BASE
+gcode:
+  TURN_OFF_HEATERS
+  CANCEL_PRINT_BASE
+
 
 #uncomment the following lines to use Z_TILT_ADJUST and uncomment G34 Macro to use G34
 #[z_tilt]
@@ -329,15 +405,28 @@ stealthchop_threshold: 250
 #*#
 #*# [extruder]
 #*# control = pid
-#*# pid_kp = 21.465
-#*# pid_ki = 0.980
-#*# pid_kd = 117.521
+#*# pid_kp = 34.631
+#*# pid_ki = 2.178
+#*# pid_kd = 137.659
 #*#
 #*# [bltouch]
-#*# z_offset = 2.045
+#*# z_offset = 2.050
 #*#
-#*# [heater_bed]
-#*# control = pid
-#*# pid_kp = 48.362
-#*# pid_ki = 0.638
-#*# pid_kd = 915.854
+#*# [bed_mesh default]
+#*# version = 1
+#*# points =
+#*# 	  -0.032500, 0.040000, 0.025000, 0.140000, 0.386250
+#*# 	  0.057500, 0.083750, 0.155000, 0.303750, 0.415000
+#*# 	  0.061250, 0.097500, 0.163750, 0.303750, 0.458750
+#*# 	  0.055000, 0.096250, 0.158750, 0.282500, 0.418750
+#*# 	  0.006250, 0.062500, 0.112500, 0.256250, 0.433750
+#*# tension = 0.2
+#*# min_x = 38.0
+#*# algo = bicubic
+#*# y_count = 5
+#*# mesh_y_pps = 2
+#*# min_y = 20.0
+#*# x_count = 5
+#*# max_y = 270.0
+#*# mesh_x_pps = 2
+#*# max_x = 257.0
