@@ -144,6 +144,12 @@ samples_result:average
 probe_with_touch_mode: true
 stow_on_each_sample: false
 
+[filament_switch_sensor RunoutSensor]
+pause_on_runout: False
+runout_gcode: PAUSE
+insert_gcode: RESUME
+switch_pin: !PC2
+
 [safe_z_home]
 home_xy_position: 122,183
 speed: 150
