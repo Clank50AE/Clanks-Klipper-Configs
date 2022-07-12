@@ -1,0 +1,391 @@
+# This file contains common pin mappings for the BigTreeTech SKR 3.
+# To use this config, the firmware should be compiled for the
+# STM32H743 with a "128KiB bootloader".
+
+# See docs/Config_Reference.md for a description of parameters.
+
+[stepper_x]
+step_pin: PD4
+dir_pin: PD3
+enable_pin: !PD6
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PC1
+#endstop_pin: tmc2209_stepper_x:virtual_endstop
+position_endstop: 0
+position_max: 300
+homing_speed: 50
+
+[stepper_y]
+step_pin: PA15
+dir_pin: !PA8
+enable_pin: !PD1
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PC3
+#endstop_pin: tmc2209_stepper_y:virtual_endstop
+position_endstop: 0
+position_max: 300
+homing_speed: 50
+
+[stepper_z]
+step_pin: PE2
+dir_pin: PE3
+enable_pin: !PE0
+microsteps: 16
+rotation_distance: 8
+endstop_pin: probe:z_virtual_endstop
+endstop_pin: ^PC0
+position_endstop: -2
+position_max: 380
+
+[stepper_z1]
+step_pin: PD11
+dir_pin: PD10
+enable_pin: !PD13
+microsteps: 16
+rotation_distance: 8
+
+[extruder]
+step_pin: PD15
+dir_pin: PD14
+enable_pin: !PC7
+microsteps: 16
+rotation_distance: 33.500
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PB3
+sensor_type: ATC Semitec 104GT-2
+sensor_pin: PA2
+control: pid
+pid_Kp: 22.2
+pid_Ki: 1.08
+pid_Kd: 114
+max_extrude_only_distance: 100
+min_extrude_temp: 170
+min_temp: -10
+max_temp: 260
+pressure_advance: .06
+
+
+#[extruder1]
+#heater_pin: PB4
+#sensor_pin: PA3
+#...
+
+[heater_bed]
+heater_pin: PD7
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PA1
+control: pid
+#pid_Kp: 22.2
+#pid_Ki: 1.08
+#pid_Kd: 114
+min_temp: -5
+max_temp: 130
+
+[fan]
+pin: PB7
+
+[heater_fan my_nozzle_fan]
+pin: PB6
+heater: extruder
+heater_temp: 50.0
+fan_speed: 1.0
+
+#[heater_fan fan2]
+#pin: PB5
+
+[mcu]
+serial: /dev/serial/by-id/usb-Klipper_Klipper_firmware_12345-if00
+
+[display_status]
+
+[virtual_sdcard]
+path: ~/gcode_files
+
+[printer]
+kinematics: cartesian
+max_velocity: 300
+max_accel: 3000
+max_z_velocity: 20
+max_z_accel: 100
+square_corner_velocity: 5
+
+[bltouch]
+sensor_pin: PC13
+control_pin: PE5
+x_offset: -48
+y_offset: -20
+#z_offset: 0
+samples:2
+samples_result:average
+probe_with_touch_mode: true
+stow_on_each_sample: false
+
+[filament_switch_sensor RunoutSensor]
+pause_on_runout: False
+runout_gcode: PAUSE
+insert_gcode: RESUME
+switch_pin: !PC2
+
+[safe_z_home]
+home_xy_position: 122,183
+speed: 150
+z_hop: 10  # Move up 10mm
+z_hop_speed: 5
+
+[bed_screws]
+screw1: 55,55
+screw1_name: front left
+screw2: 255,55
+screw2_name: front right
+screw3: 255,255
+screw3_name: back right
+screw4: 55,255
+screw4_name: back left
+speed: 100.0
+
+[screws_tilt_adjust]
+screw1: 22,83
+screw1_name: front left
+screw2: 222,83
+screw2_name: front right
+screw3: 22,283
+screw3_name: back left
+screw4: 222,283
+screw4_name: back right
+speed: 100.0
+screw_thread: CW-M5
+
+[bed_mesh]
+speed: 400
+mesh_min: 38,20
+mesh_max: 257,270
+probe_count: 5,5
+mesh_pps: 2,2
+algorithm: bicubic
+bicubic_tension: 0.2
+move_check_distance: 3.0
+split_delta_z: .010
+fade_start: 1.0 
+fade_end: 5.0
+
+#[resonance_tester]
+#accel_chip: adxl345
+#probe_points:
+#150, 155, 20
+
+#Accelerometer
+#[adxl345]
+#cs_pin: 
+#   The SPI enable pin for the sensor. This parameter must be provided.
+#spi_speed: 5000000
+#   The SPI speed (in hz) to use when communicating with the chip.
+#   The default is 5000000.
+#spi_bus: spi
+#spi_software_sclk_pin: 
+#spi_software_mosi_pin: 
+#spi_software_miso_pin: 
+#   See the "common SPI settings" section for a description of the
+#   above parameters.
+#axes_map: x, y, z
+#   The accelerometer axis for each of the printer's X, Y, and Z axes.
+#   This may be useful if the accelerometer is mounted in an
+#   orientation that does not match the printer orientation. For
+#   example, one could set this to "y, x, z" to swap the X and Y axes.
+#   It is also possible to negate an axis if the accelerometer
+#   direction is reversed (eg, "x, z, -y"). The default is "x, y, z".
+#rate: 3200
+#   Output data rate for ADXL345. ADXL345 supports the following data
+#   rates: 3200, 1600, 800, 400, 200, 100, 50, and 25. Note that it is
+#   not recommended to change this rate from the default 3200, and
+#   rates below 800 will considerably affect the quality of resonance
+#   measurements.
+
+########################################
+# Macro configs
+########################################
+
+[gcode_macro START_PRINT]
+# Reference https://github.com/KevinOConnor/klipper/blob/master/docs/Config_Reference.md#gcode_macroA
+# On how to override default parameters
+default_parameter_BED_TEMP: 60
+default_parameter_EXTRUDER_TEMP: 200
+
+gcode:
+ # Home the printer
+	G28
+    #Probe Everytime
+	G29 
+	#load saved mesh at print start instead of probe. Uncomment to use but comment out G29
+	#BED_MESH_PROFILE LOAD=default   					 
+    # Use absolute coordinates
+    G90
+    # Move the nozzle near the bed
+    G1 X0 Y0 Z5 F3000
+    # Move the nozzle very close to the bed
+    G1 Z0.15 F300
+    G92 E0 ;Reset Extruder
+    G1 X20 Y5 Z0.3 F5000.0			   
+    G1 Z0.3 F1000 				    
+    G1 X200 Y5 F1500.0 E15 			   
+    G1 X200 Y5.3 Z0.3 F5000.0			    
+    G1 X5.3  Y5.3 Z0.3 F1500.0 E30 			
+    G1 Z3 F3000 				     
+    G21 ; set units to millimeters
+    G90 ; use absolute coordinates
+    M83 ; use relative	distances for extrusion
+    G92 E0
+
+[gcode_macro END_PRINT]
+gcode:
+    # Turn off bed, extruder, and fan
+    M140 S0
+    M104 S0
+    M106 S0
+    # Move nozzle away from print while retracting
+    G91
+    G1 X-2 Y-2 E-3 F300
+    # Raise nozzle by 10mm
+    G1 Z30 F3000
+    G90
+    # Disable steppers
+    M84
+
+[pause_resume]
+recover_velocity: 50.
+
+[gcode_macro PAUSE]
+description: Pause the actual running print
+rename_existing: PAUSE_BASE
+# change this if you need more or less extrusion
+variable_extrude: 1.0
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  ##### set park positon for x and y #####
+  # default is your max posion from your printer.cfg
+  {% set x_park = printer.toolhead.axis_maximum.x|float - 5.0 %}
+  {% set y_park = printer.toolhead.axis_maximum.y|float - 5.0 %}
+  ##### calculate save lift position #####
+  {% set max_z = printer.toolhead.axis_maximum.z|float %}
+  {% set act_z = printer.toolhead.position.z|float %}
+  {% if act_z < (max_z - 2.0) %}
+      {% set z_safe = 2.0 %}
+  {% else %}
+      {% set z_safe = max_z - act_z %}
+  {% endif %}
+  ##### end of definitions #####
+  PAUSE_BASE
+  G91
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G1 E-{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}
+  {% if "xyz" in printer.toolhead.homed_axes %}
+    G1 Z{z_safe} F900
+    G90
+    G1 X{x_park} Y{y_park} F6000
+  {% else %}
+    {action_respond_info("Printer not homed")}
+  {% endif %} 
+
+[gcode_macro RESUME]
+description: Resume the actual running print
+rename_existing: RESUME_BASE
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  #### get VELOCITY parameter if specified ####
+  {% if 'VELOCITY' in params|upper %}
+    {% set get_params = ('VELOCITY=' + params.VELOCITY)  %}
+  {%else %}
+    {% set get_params = "" %}
+  {% endif %}
+  ##### end of definitions #####
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G91
+    G1 E{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}  
+  RESUME_BASE {get_params}
+
+[gcode_macro CANCEL_PRINT]
+description: Cancel the actual running print
+rename_existing: CANCEL_PRINT_BASE
+gcode:
+  TURN_OFF_HEATERS
+  CANCEL_PRINT_BASE
+
+
+#uncomment the following lines to use Z_TILT_ADJUST and uncomment G34 Macro to use G34
+#[z_tilt]
+#z_positions: 
+#     10,155
+#     270,155
+#
+#points: 
+#    10,155
+#    270,155
+#speed: 100
+#horizontal_move_z: 10
+
+########################################
+# EXP1 / EXP2 (display) pins
+########################################
+
+[board_pins]
+aliases:
+    # EXP1 header
+    EXP1_1=PC5, EXP1_3=PB1, EXP1_5=PE9,  EXP1_7=PE11, EXP1_9=<GND>,
+    EXP1_2=PB0, EXP1_4=PE8, EXP1_6=PE10, EXP1_8=PE12, EXP1_10=<5V>,
+    # EXP2 header
+    EXP2_1=PA6, EXP2_3=PE7, EXP2_5=PB2, EXP2_7=PC4,   EXP2_9=<GND>,
+    EXP2_2=PA5, EXP2_4=PA4, EXP2_6=PA7, EXP2_8=<RST>, EXP2_10=<NC>
+
+# See the sample-lcd.cfg file for definitions of common LCD displays.
+
+########################################
+# TMC2209 configuration
+########################################
+
+[tmc2209 stepper_x]
+uart_pin: PD5
+run_current: 0.650
+hold_current: 0.500
+stealthchop_threshold: 250
+#diag_pin:
+#driver_SGTHRS: 255
+
+[tmc2209 stepper_y]
+uart_pin: PD0
+run_current: 0.650
+hold_current: 0.500
+stealthchop_threshold: 250
+#diag_pin:
+#driver_SGTHRS: 255
+
+[tmc2209 stepper_z]
+uart_pin: PE1
+run_current: 0.650
+hold_current: 0.500
+stealthchop_threshold: 250
+#diag_pin:
+
+
+[tmc2209 stepper_z1]
+uart_pin: PD12
+run_current: 0.650
+hold_current: 0.500
+stealthchop_threshold: 250
+#diag_pin:
+
+[tmc2209 extruder]
+uart_pin: PC6
+run_current: 0.650
+hold_current: 0.500
+stealthchop_threshold: 10
+#diag_pin:
